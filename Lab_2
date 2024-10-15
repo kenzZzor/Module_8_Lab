@@ -1,0 +1,136 @@
+using System;
+
+public abstract class Beverage
+{
+    // Шаблонный метод, определяющий общие шаги приготовления напитка
+    public void PrepareRecipe()
+    {
+        BoilWater();
+        Brew();
+        PourInCup();
+        if (UserWantsCondiments())
+        {
+            AddCondiments();
+        }
+    }
+
+    private void BoilWater()
+    {
+        Console.WriteLine("Кипячение воды...");
+    }
+
+    private void PourInCup()
+    {
+        Console.WriteLine("Наливание в чашку...");
+    }
+
+    protected abstract void Brew();
+    protected abstract void AddCondiments();
+
+    protected virtual bool UserWantsCondiments()
+    {
+        return true; 
+    }
+}
+
+public class Tea : Beverage
+{
+    protected override void Brew()
+    {
+        Console.WriteLine("Заваривание чая...");
+    }
+
+    protected override void AddCondiments()
+    {
+        Console.WriteLine("Добавление лимона...");
+    }
+
+    protected override bool UserWantsCondiments()
+    {
+        Console.Write("Хотите добавить лимон в чай (y/n)? ");
+        string answer = Console.ReadLine().ToLower();
+        return answer == "y";
+    }
+}
+
+public class Coffee : Beverage
+{
+    protected override void Brew()
+    {
+        Console.WriteLine("Заваривание кофе...");
+    }
+
+    protected override void AddCondiments()
+    {
+        try
+        {
+            // Псевдопроверка на наличие ингредиентов
+            bool hasMilk = CheckIngredient("молоко");
+            bool hasSugar = CheckIngredient("сахар");
+
+            if (!hasMilk || !hasSugar)
+            {
+                throw new InvalidOperationException("Не хватает ингредиентов для добавления сахара и молока!");
+            }
+
+            Console.WriteLine("Добавление сахара и молока...");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка: {ex.Message}");
+        }
+    }
+
+    private bool CheckIngredient(string ingredient)
+    {
+        // Здесь может быть логика проверки наличия ингредиентов
+        // Например, в базе данных или через какой-то другой сервис.
+        // Пока что всегда возвращаем true для упрощения.
+        return true;
+    }
+}
+
+
+public class HotChocolate : Beverage
+{
+    protected override void Brew()
+    {
+        Console.WriteLine("Приготовление горячего шоколада...");
+    }
+
+    protected override void AddCondiments()
+    {
+        Console.WriteLine("Добавление маршмеллоу...");
+    }
+
+    protected override bool UserWantsCondiments()
+    {
+        Console.Write("Хотите добавить маршмеллоу в горячий шоколад (y/n)? ");
+        string answer = Console.ReadLine().ToLower();
+        return answer == "y";
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Beverage tea = new Tea();
+        Console.WriteLine("Приготовление чая:");
+        tea.PrepareRecipe();
+
+        Console.WriteLine();
+
+        Beverage coffee = new Coffee();
+        Console.WriteLine("Приготовление кофе:");
+        coffee.PrepareRecipe();
+
+        Console.WriteLine();
+
+        Beverage hotChocolate = new HotChocolate();
+        Console.WriteLine("Приготовление горячего шоколада:");
+        hotChocolate.PrepareRecipe();
+    }
+}
+
+
