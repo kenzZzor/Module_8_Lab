@@ -1,0 +1,115 @@
+public interface IMediator
+{
+    void SendMessage(string message, Colleague colleague);
+    void SendPrivateMessage(string message, Colleague sender, Colleague receiver);
+}
+
+public abstract class Colleague
+{
+    protected IMediator _mediator;
+
+    public Colleague(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    public abstract void ReceiveMessage(string message);
+}
+
+public class ChatMediator : IMediator
+{
+    private List<Colleague> _colleagues;
+    private List<string> _messageLog;
+
+    public ChatMediator()
+    {
+        _colleagues = new List<Colleague>();
+        _messageLog = new List<string>();
+    }
+
+    public void RegisterColleague(Colleague colleague)
+    {
+        _colleagues.Add(colleague);
+    }
+
+    public void SendMessage(string message, Colleague sender)
+    {
+        _messageLog.Add($"{((User)sender).Name} отправил: {message}");
+        foreach (var colleague in _colleagues)
+        {
+            if (colleague != sender)
+            {
+                colleague.ReceiveMessage(message);
+            }
+        }
+    }
+
+    public void SendPrivateMessage(string message, Colleague sender, Colleague receiver)
+    {
+        _messageLog.Add($"Приватное сообщение от {((User)sender).Name} к {((User)receiver).Name}: {message}");
+        receiver.ReceiveMessage($"Приватное сообщение от {((User)sender).Name}: {message}");
+    }
+
+    public void PrintMessageLog()
+    {
+        Console.WriteLine("История сообщений:");
+        foreach (var log in _messageLog)
+        {
+            Console.WriteLine(log);
+        }
+    }
+}
+
+public class User : Colleague
+{
+    public string Name { get; private set; }
+
+    public User(IMediator mediator, string name) : base(mediator)
+    {
+        Name = name;
+    }
+
+    public void Send(string message)
+    {
+        Console.WriteLine($"{Name} отправляет сообщение: {message}");
+        _mediator.SendMessage(message, this);
+    }
+
+    public void SendPrivate(string message, User receiver)
+    {
+        Console.WriteLine($"{Name} отправляет приватное сообщение {receiver.Name}: {message}");
+        _mediator.SendPrivateMessage(message, this, receiver);
+    }
+
+    public override void ReceiveMessage(string message)
+    {
+        Console.WriteLine($"{Name} получил сообщение: {message}");
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        ChatMediator chatMediator = new ChatMediator();
+
+        User user1 = new User(chatMediator, "Алиса");
+        User user2 = new User(chatMediator, "Боб");
+        User user3 = new User(chatMediator, "Чарли");
+
+        chatMediator.RegisterColleague(user1);
+        chatMediator.RegisterColleague(user2);
+        chatMediator.RegisterColleague(user3);
+
+        user1.Send("Привет всем!");
+        user2.Send("Привет, Алиса!");
+        user3.Send("Всем привет!");
+
+        Console.WriteLine();
+
+        user1.SendPrivate("Как дела, Боб?", user2);
+
+    }
+}
+
+
